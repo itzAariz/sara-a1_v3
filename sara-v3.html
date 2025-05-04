@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Sara-a1</title>
+  <style>
+    :root {
+      --bg: linear-gradient(145deg, #0f2027, #203a43, #2c5364);
+      --bot-color: rgba(255, 255, 255, 0.08);
+      --user-color: linear-gradient(to right, #2193b0, #6dd5ed);
+      --text-color: #fff;
+      --header-color: #4CAF50;
+    }
+
+    body.light {
+      --bg: #f0f0f0;
+      --bot-color: #ffffff;
+      --user-color: #4CAF50;
+      --text-color: #333;
+      --header-color: #2193b0;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: var(--bg);
+      color: var(--text-color);
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      transition: background 0.3s, color 0.3s;
+    }
+
+    #chat-container {
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      width: 100%;
+    }
+
+    header {
+      background-color: rgba(30, 30, 30, 0.8);
+      padding: 16px 24px;
+      text-align: center;
+      font-size: 1.5rem;
+      font-weight: 600;
+      color: var(--header-color);
+      letter-spacing: 1px;
+      position: relative;
+    }
+
+    #theme-toggle {
+      position: absolute;
+      right: 20px;
+      top: 16px;
+      background: none;
+      border: none;
+      font-size: 1.2rem;
+      cursor: pointer;
+      color: var(--header-color);
+    }
+
+    #messages {
+      flex: 1;
+      padding: 20px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      scroll-behavior: smooth;
+    }
+
+    .message {
+      padding: 14px 18px;
+      border-radius: 20px;
+      max-width: 75%;
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      animation: fadeIn 0.3s ease-in-out;
+    }
+
+    .message .bubble {
+      padding: 12px 16px;
+      border-radius: 18px;
+      line-height: 1.6;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+    }
+
+    .bot-message {
+      align-self: flex-start;
+      flex-direction: row;
+    }
+
+    .bot-message .bubble {
+      background-color: var(--bot-color);
+      border: 1px solid rgba(255,255,255,0.1);
+      color: var(--text-color);
+    }
+
+    .user-message {
+      align-self: flex-end;
+      flex-direction: row-reverse;
+    }
+
+    .user-message .bubble {
+      background: var(--user-color);
+      color: #fff;
+    }
+
+    .avatar {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background-size: cover;
+      background-position: center;
+    }
+
+    .avatar.bot {
+      background-image: url('https://cdn-icons-png.flaticon.com/512/4712/4712105.png');
+    }
+
+    .avatar.user {
+      background-image: url('https://cdn-icons-png.flaticon.com/512/3135/3135715.png');
+    }
+
+    #input-area {
+      display: flex;
+      padding: 14px 20px;
+      background-color: rgba(0, 0, 0, 0.3);
+    }
+
+    #user-input {
+      flex: 1;
+      padding: 14px 18px;
+      font-size: 16px;
+      border: none;
+      border-radius: 30px;
+      background-color: rgba(255, 255, 255, 0.1);
+      color: var(--text-color);
+      outline: none;
+    }
+
+    #user-input::placeholder {
+      color: #bbb;
+    }
+
+    button {
+      margin-left: 12px;
+      padding: 14px 20px;
+      font-size: 16px;
+      border: none;
+      border-radius: 30px;
+      background-color: var(--header-color);
+      color: white;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    button:hover {
+      background-color: #45a049;
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(10px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    /* Welcome Screen Styles */
+    #welcome-screen {
+      position: fixed;
+      z-index: 1000;
+      inset: 0;
+      background: var(--bg);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      transition: opacity 0.4s ease;
+    }
+
+    .welcome-content {
+      text-align: center;
+      color: var(--text-color);
+    }
+
+    .welcome-content h1 {
+      font-size: 2rem;
+      margin-bottom: 20px;
+    }
+
+    #welcome-screen button {
+      padding: 14px 30px;
+      font-size: 18px;
+      border: none;
+      border-radius: 30px;
+      background-color: var(--header-color);
+      color: white;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    #welcome-screen button:hover {
+      background-color: #45a049;
+    }
+
+    #welcome-screen.hidden {
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .bot-message img {
+      max-width: 300px;
+      border-radius: 10px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+    }
+
+  </style>
+</head>
+<body>
+
+  <!-- Welcome Screen -->
+  <div id="welcome-screen">
+    <div class="welcome-content">
+      <h1>How can I help you with?</h1>
+      <button id="start-chat">Get Started</button>
+    </div>
+  </div>
+
+  <!-- Chat Container -->
+  <div id="chat-container">
+    <header>
+      Sara-a1
+      <button id="theme-toggle">🌙</button>
+    </header>
+    <div id="messages"></div>
+    <div id="input-area">
+      <input type="text" id="user-input" placeholder="Ask me anything..." />
+      <button onclick="getResponse()">Send</button>
+      <button onclick="startSpeech()">🎙️</button>
+    </div>
+  </div>
+
+  <script>
+    const messagesContainer = document.getElementById("messages");
+    const themeToggle = document.getElementById("theme-toggle");
+
+    themeToggle.addEventListener("click", () => {
+      document.body.classList.toggle("light");
+      themeToggle.textContent = document.body.classList.contains("light") ? "☀️" : "🌙";
+    });
+
+    function displayMessage(text, sender) {
+      const messageDiv = document.createElement("div");
+      messageDiv.classList.add("message", `${sender}-message`);
+
+      const avatar = document.createElement("div");
+      avatar.classList.add("avatar", sender);
+
+      const bubble = document.createElement("div");
+      bubble.classList.add("bubble");
+      bubble.textContent = text;
+
+      messageDiv.appendChild(avatar);
+      messageDiv.appendChild(bubble);
+      messagesContainer.appendChild(messageDiv);
+      messagesContainer.scrollTop = messagesContainer.scrollHeight;
+
+      return bubble;
+    }
+
+    function getResponse() {
+      const inputField = document.getElementById("user-input");
+      const userInput = inputField.value.trim();
+      if (!userInput) return;
+
+      displayMessage(userInput, "user");
+      inputField.value = "";
+
+      const typingBubble = displayMessage("Typing...", "bot");
+
+      const input = userInput.toLowerCase();
+      let botResponse = "I'm not sure how to answer that. Can you ask in another way?";
+
+      // Check for commands
+      if (input.includes("generate image") || input.includes("gen a image")) {
+        botResponse = "Here's a random image for you!";
+        generateRandomImage();
+      } else if (input.includes("story")) {
+        botResponse = "Once upon a time, in a faraway land, there was a brave knight who set out on a quest to find the lost treasure of the kingdom. Along the way, they encountered many challenges, but with courage and determination, they overcame them all. Eventually, they found the treasure and brought prosperity to the land.";
+      } else if (input.includes("hello")) botResponse = "Hello! How can I assist you today?";
+      else if (input.includes("how are you")) botResponse = "I'm doing great, thank you for asking!";
+      else if (input.includes("your name")) botResponse = "I'm your friendly chatbot called Sara!";
+      else if (input.includes("bye")) botResponse = "Goodbye! Have a great day!";
+      else if (input.includes("hi")) botResponse = "Hi! How can I help you?";
+      else if (input.includes("who created you")) botResponse = "I was created by a company called BitScream on April 15th.";
+      else if (input.includes("what is your engine")) botResponse = "I am running on an engine called GPT o4.";
+      else if (input.includes("what version you are")) botResponse = "My version is Sara-a1. You can see it in the website title.";
+      else if (input.includes("what programming language are you from")) botResponse = "I am built using HTML and JavaScript.";
+      else if (input.includes("tell me a joke")) botResponse = "Why don't scientists trust atoms? Because they make up everything!";
+      else if (input.includes("what are you?")) botResponse = "I am a ai chatbot called Sara!";
+      setTimeout(() => {
+        typingBubble.textContent = botResponse;
+      }, 600);
+    }
+
+    document.getElementById("user-input").addEventListener("keypress", function (e) {
+      if (e.key === "Enter") getResponse();
+    });
+
+    function startSpeech() {
+      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+      if (!SpeechRecognition) {
+        alert("Speech recognition not supported in this browser.");
+        return;
+      }
+
+      const recognition = new SpeechRecognition();
+      recognition.lang = 'en-US';
+      recognition.interimResults = false;
+      recognition.maxAlternatives = 1;
+
+      recognition.start();
+
+      recognition.onresult = function(event) {
+        const transcript = event.results[0][0].transcript;
+        document.getElementById("user-input").value = transcript;
+        getResponse();
+      };
+
+      recognition.onerror = function(event) {
+        alert("Speech recognition error: " + event.error);
+      };
+    }
+
+    // Handle Welcome Screen
+    document.getElementById("start-chat").addEventListener("click", () => {
+      const welcome = document.getElementById("welcome-screen");
+      welcome.classList.add("hidden");
+      setTimeout(() => {
+        welcome.style.display = "none";
+      }, 400);
+    });
+
+    // Function to generate random image using Lorem Picsum API
+    function generateRandomImage() {
+      const messageDiv = document.createElement("div");
+      messageDiv.classList.add("message", "bot-message");
+
+      const avatar = document.createElement("div");
+      avatar.classList.add("avatar", "bot");
+
+      const image = document.createElement("img");
+      image.src = `https://picsum.photos/500`; // Random image from Lorem Picsum API
+      image.alt = "Random Image";
+      
+      image.onerror = () => {
+        console.error("Failed to load image.");
+      };
+
+      messageDiv.appendChild(avatar);
+      messageDiv.appendChild(image);
+      messagesContainer.appendChild(messageDiv);
+      messagesContainer.scrollTop = messagesContainer.scrollHeight;
+    }
+  </script>
+</body>
+</html>
